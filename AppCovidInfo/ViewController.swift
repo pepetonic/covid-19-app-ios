@@ -18,38 +18,30 @@ class ViewController: UIViewController {
     @IBOutlet weak var labelRecuperados: UILabel!
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         //Cargar Api al iniciar la app
         cargarInfoPrincipal()
     }
     
     func cargarInfoPrincipal(){
         let urlAPI = URL(string: "https://corona.lmao.ninja/v3/covid-19/all")
-        //let urlAPI = URL(string: "https://corona.lmao.ninja/v3/covid-19/countries/mexico")
-        
         let peticion = URLRequest(url: urlAPI!)
-        
         let tarea = URLSession.shared.dataTask(with: peticion){datos,respuesta,error in
-            //
             if error != nil {
                 print(error!)
             }else {
                 do{
-                    
                     let json = try JSONSerialization.jsonObject(with: datos!, options: JSONSerialization.ReadingOptions.mutableContainers) as AnyObject
                     
-                    //let pais = json["country"] as! String
                     let casos = json["cases"] as! Int
                     let muertes = json["deaths"] as! Int
                     let recuperados = json["recovered"] as! Int
-                    
-                    //let subjson = json ["countryInfo"] as! [String: Any]
-                    //let img = subjson ["flag"] as! String
                     let pais = "Global"
+                
                     if pais == ""{
-                        DispatchQueue.main.sync {
-                            self.labelPais.text = "Error"
-                        }
+                        let alerta = UIAlertController(title: "Error", message: "Llena el campo de texto", preferredStyle: .alert)
+                        let aceptar = UIAlertAction(title: "Aceptar", style: .default, handler: nil)
+                        alerta.addAction(aceptar)
+                        self.present(alerta,animated: true, completion: nil)
                     }else{
                         DispatchQueue.main.sync {
                             self.labelPais.text = "Stituación \(pais)"
@@ -57,11 +49,7 @@ class ViewController: UIViewController {
                             self.labelDefunciones.text = "Total de defunciones: \( String(muertes))"
                             self.labelRecuperados.text = "Recuperados: \(String(recuperados))"
                         }
-                                     
-                    
                     }
-                    
-                    
                 } catch{
                     print("Error al procesar el Json \(error.localizedDescription)")
                 }
@@ -86,13 +74,14 @@ class ViewController: UIViewController {
                     let muertes = json["deaths"] as! Int
                     let recuperados = json["recovered"] as! Int
                     
-                    //let subjson = json ["countryInfo"] as! [String: Any]
-                    //let img = subjson ["flag"] as! String
-                    
+                    let subjson = json ["countryInfo"] as! [String: Any]
+                    let urlImg = subjson ["flag"] as! String
+                    let imgUrl = URL(string: urlImg)
                     if pais == ""{
-                        DispatchQueue.main.sync {
-                            self.labelPais.text = "Error"
-                        }
+                        let alerta = UIAlertController(title: "Error", message: "Llena el campo de texto", preferredStyle: .alert)
+                        let aceptar = UIAlertAction(title: "Aceptar", style: .default, handler: nil)
+                        alerta.addAction(aceptar)
+                        self.present(alerta,animated: true, completion: nil)
                     }else{
                         DispatchQueue.main.sync {
                             self.labelPais.text = "Stituación \(pais)"
@@ -100,8 +89,7 @@ class ViewController: UIViewController {
                             self.labelDefunciones.text = "Total de defunciones: \( String(muertes))"
                             self.labelRecuperados.text = "Recuperados: \(String(recuperados))"
                         }
-                                     
-                    
+                        self.obtenerImage (url: imgUrl!)
                     }
                     
                     
@@ -113,6 +101,8 @@ class ViewController: UIViewController {
         }
         tarea.resume()
     }
+    
+    
     @IBAction func buscarPais(_ sender: UIBarButtonItem) {
         let alert = UIAlertController(title: "Buscar país", message: "Escriba el nombre del país en Inglés", preferredStyle: .alert)
         
@@ -129,7 +119,7 @@ class ViewController: UIViewController {
                 alerta.addAction(aceptar)
                 self.present(alerta,animated: true, completion: nil)
             }else {
-                
+                self.buscarInfoPais(country: pais)
             }
         }
         
@@ -140,5 +130,32 @@ class ViewController: UIViewController {
         
         present(alert,animated: true, completion:nil)
     }
-}
+    
+    func obtenerImage (url: URL){
+        print("Download Started")
+            getData(from: url) { data, response, error in
+                guard let data = data, error == nil else { return }
+                print(response?.suggestedFilename ?? url.lastPathComponent)
+                print("Download Finished")
+                DispatchQueue.main.async() { [weak self] in
+                    self?.imageView.image = UIImage(data: data)
+                }
+        }
+        
+    }
+    func getData(from url: URL, completion: @escaping (Data?, URLResponse?, Error?) -> ()) {
+        URLSession.shared.dataTask(with: url, completionHandler: completion).resume()
+    }}
 
+/*
+ print("Download Started")
+     getData(from: url) { data, response, error in
+         guard let data = data, error == nil else { return }
+         print(response?.suggestedFilename ?? url.lastPathComponent)
+         print("Download Finished")
+         DispatchQueue.main.async() { [weak self] in
+             self?.imageView.image = UIImage(data: data)
+         }
+ }
+ ////////
+*/
