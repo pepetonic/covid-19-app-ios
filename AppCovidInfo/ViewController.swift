@@ -69,30 +69,39 @@ class ViewController: UIViewController {
                 do{
                     let json = try JSONSerialization.jsonObject(with: datos!, options: JSONSerialization.ReadingOptions.mutableContainers) as AnyObject
                     
-                    let pais = json["country"] as! String
-                    let casos = json["cases"] as! Int
-                    let muertes = json["deaths"] as! Int
-                    let recuperados = json["recovered"] as! Int
-                    
-                    let subjson = json ["countryInfo"] as! [String: Any]
-                    let urlImg = subjson ["flag"] as! String
-                    let imgUrl = URL(string: urlImg)
-                    if pais == ""{
-                        let alerta = UIAlertController(title: "Error", message: "Llena el campo de texto", preferredStyle: .alert)
-                        let aceptar = UIAlertAction(title: "Aceptar", style: .default, handler: nil)
-                        alerta.addAction(aceptar)
-                        self.present(alerta,animated: true, completion: nil)
-                    }else{
+                    //let message = json [] if pagesSubJson.keys.first == "-1"
+                    let jsonn = json as! [String: Any]
+                    if jsonn.keys.first == "message"  {
                         DispatchQueue.main.sync {
-                            self.labelPais.text = "Stituación \(pais)"
-                            self.labelTotalCasos.text = "Total de casos: \(String(casos))"
-                            self.labelDefunciones.text = "Total de defunciones: \( String(muertes))"
-                            self.labelRecuperados.text = "Recuperados: \(String(recuperados))"
+                            let alerta = UIAlertController(title: "Error", message: "Llena el campo de texto con un pais valido o en Inglés", preferredStyle: .alert)
+                            let aceptar = UIAlertAction(title: "Aceptar", style: .default, handler: nil)
+                            alerta.addAction(aceptar)
+                            self.present(alerta,animated: true, completion: nil)
                         }
-                        self.obtenerImage (url: imgUrl!)
+                    }else{
+                        let pais = json["country"] as! String
+                        let casos = json["cases"] as! Int
+                        let muertes = json["deaths"] as! Int
+                        let recuperados = json["recovered"] as! Int
+                        
+                        let subjson = json ["countryInfo"] as! [String: Any]
+                        let urlImg = subjson ["flag"] as! String
+                        let imgUrl = URL(string: urlImg)
+                        if pais == ""{
+                            let alerta = UIAlertController(title: "Error", message: "Llena el campo de texto", preferredStyle: .alert)
+                            let aceptar = UIAlertAction(title: "Aceptar", style: .default, handler: nil)
+                            alerta.addAction(aceptar)
+                            self.present(alerta,animated: true, completion: nil)
+                        }else{
+                            DispatchQueue.main.sync {
+                                self.labelPais.text = "Stituación \(pais)"
+                                self.labelTotalCasos.text = "Total de casos: \(String(casos))"
+                                self.labelDefunciones.text = "Total de defunciones: \( String(muertes))"
+                                self.labelRecuperados.text = "Recuperados: \(String(recuperados))"
+                            }
+                            self.obtenerImage (url: imgUrl!)
+                        }
                     }
-                    
-                    
                 } catch{
                     print("Error al procesar el Json \(error.localizedDescription)")
                 }
